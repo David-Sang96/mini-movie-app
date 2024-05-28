@@ -1,5 +1,15 @@
+import { useEffect, useState } from "react";
+import ErrorMessage from "./components/ErrorMessage";
+import Loader from "./components/Loader";
 import Main from "./components/main/Main";
+import Box from "./components/main/leftBox/Box";
+import MovieList from "./components/main/leftBox/MovieList";
+import WatchedList from "./components/main/rightBox/WatchedList";
+import WatchedSummary from "./components/main/rightBox/WatchedSummary";
+import Logo from "./components/nav/Logo";
 import Navbar from "./components/nav/Navbar";
+import NumResults from "./components/nav/NumResults";
+import Search from "./components/nav/Search";
 
 const tempMovieData = [
   {
@@ -48,11 +58,71 @@ const tempWatchedData = [
   },
 ];
 
+const KEY = "f114533e";
+
 export default function App() {
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const tempQuery = "cat";
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${tempQuery}`
+        );
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movies");
+        const data = await res.json();
+
+        if (data.Response === "False") throw new Error("Movie not found");
+        setMovies(data.Search);
+
+        // console.log(movies); this gonna be empty array cuz setting state is async
+      } catch (error) {
+        console.error(error.message);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getData();
+  }, []);
+
   return (
     <>
-      <Navbar />
-      <Main tempMovieData={tempMovieData} tempWatchedData={tempWatchedData} />
+      <Navbar>
+        <Logo />
+        <Search />
+        <NumResults movies={movies} />
+      </Navbar>
+
+      <Main>
+        {/* <Box element={<MovieList movies={movies} />} />
+        <Box
+          element={
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedList watched={watched} />
+            </>
+          }
+        /> */}
+        <Box>
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {isLoading && <Loader />}
+          {error && <ErrorMessage message={error} />}
+        </Box>
+
+        <Box>
+          <WatchedSummary watched={watched} />
+          <WatchedList watched={watched} />
+        </Box>
+      </Main>
     </>
   );
 }
