@@ -27,14 +27,14 @@ function StarRating({
   size = 48,
   messages = [],
   defaultRating = 0,
-  setMovieRating,
+  onSetRating,
 }) {
   const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
 
   const handleRating = (rating) => {
     setRating(rating);
-    setMovieRating(rating);
+    onSetRating(rating);
   };
 
   const textStyle = {
