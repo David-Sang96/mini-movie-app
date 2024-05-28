@@ -67,15 +67,16 @@ export default function App() {
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiKey = process.env.REACT_APP_API_KEY;
+
   useEffect(() => {
     const getData = async () => {
       try {
         setIsLoading(true);
         setError("");
+        const res = await fetch(`${apiUrl}?apikey=${apiKey}&s=${query}`);
 
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${query}`
-        );
         if (!res.ok)
           throw new Error("Something went wrong with fetching movies");
         const data = await res.json();
