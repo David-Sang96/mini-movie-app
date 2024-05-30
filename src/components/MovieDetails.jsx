@@ -49,6 +49,31 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
     getMovieDetails();
   }, [selectedId]);
 
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return () => {
+      document.title = "usePopcorn";
+      // console.log(`clean up function for movie ${title}`);
+    };
+  }, [title]);
+
+  useEffect(() => {
+    const callBack = (e) => {
+      if (e.code === "Escape") {
+        onCloseMovie();
+        console.log("closing");
+      }
+    };
+
+    document.addEventListener("keydown", callBack);
+
+    return () => {
+      document.removeEventListener("keydown", callBack);
+    };
+  }, [onCloseMovie]);
+
   const handleAdd = () => {
     const newWatchedMovie = {
       imdbID: selectedId,

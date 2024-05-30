@@ -71,11 +71,14 @@ export default function App() {
   const apiKey = process.env.REACT_APP_API_KEY;
 
   useEffect(() => {
+    const controller = new AbortController();
     const getData = async () => {
       try {
         setIsLoading(true);
         setError("");
-        const res = await fetch(`${apiUrl}?apikey=${apiKey}&s=${query}`);
+        const res = await fetch(`${apiUrl}?apikey=${apiKey}&s=${query}`, {
+          signal: controller.signal,
+        });
 
         if (!res.ok)
           throw new Error("Something went wrong with fetching movies");
@@ -83,11 +86,14 @@ export default function App() {
 
         if (data.Response === "False") throw new Error("Movie not found");
         setMovies(data.Search);
+        setError("");
 
         // console.log(movies); this gonna be empty array cuz setting state is async
       } catch (error) {
-        console.error(error.message);
-        setError(error.message);
+        if (error.name !== "AbortError") {
+          console.log(error.message);
+          setError(error.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -99,7 +105,13 @@ export default function App() {
       return;
     }
 
+    handleCloseMovie();
+
     getData();
+
+    return () => {
+      controller.abort();
+    };
   }, [query]);
 
   const handleSelectMovie = (id) => {
